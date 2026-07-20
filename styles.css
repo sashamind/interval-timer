@@ -8,6 +8,8 @@
   --dim: #6b6459;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* Keeps pinch-zoom available while killing the double-tap zoom on controls. */
+button { touch-action: manipulation; }
 html, body { height: 100%; overscroll-behavior: none; }
 body {
   font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -25,11 +27,17 @@ body.phase-ready { background: var(--ready); color: var(--ink); }
 body.phase-done  { background: var(--done); color: #fff; }
 
 /* ---- Setup screen ---- */
+/* The app runs full-bleed under the iOS status bar and home indicator
+   (viewport-fit=cover + black-translucent), so every edge honours the inset. */
 .setup {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 28px 22px 20px;
+  padding:
+    max(28px, env(safe-area-inset-top, 0px))
+    max(22px, env(safe-area-inset-right, 0px))
+    max(20px, env(safe-area-inset-bottom, 0px))
+    max(22px, env(safe-area-inset-left, 0px));
   max-width: 480px;
   width: 100%;
   margin: 0 auto;
@@ -93,6 +101,7 @@ h1 {
   display: flex;
   gap: 8px;
   margin-top: 16px;
+  margin-bottom: 20px;   /* minimum breathing room above the pinned .start */
   flex-wrap: wrap;
 }
 .presets button {
@@ -108,10 +117,11 @@ h1 {
   cursor: pointer;
   border-radius: 0;
 }
-.presets button:active { background: var(--ink); color: var(--paper); }
+.presets button:active,
+.presets button.active { background: var(--ink); color: var(--paper); }
 
 .start {
-  margin-top: auto;
+  margin-top: auto;   /* pinned to the bottom; .presets guarantees the gap */
   width: 100%;
   padding: 22px;
   border: none;
@@ -123,7 +133,6 @@ h1 {
   text-transform: uppercase;
   border-radius: 0;
   cursor: pointer;
-  margin-top: 20px;
 }
 .start:active { transform: scale(0.99); }
 
@@ -132,7 +141,11 @@ h1 {
   flex: 1;
   display: none;
   flex-direction: column;
-  padding: 22px;
+  padding:
+    max(22px, env(safe-area-inset-top, 0px))
+    max(22px, env(safe-area-inset-right, 0px))
+    max(22px, env(safe-area-inset-bottom, 0px))
+    max(22px, env(safe-area-inset-left, 0px));
   text-align: center;
 }
 body.running .setup { display: none; }
@@ -178,9 +191,11 @@ body.running .run { display: flex; }
   border-radius: 50%;
   border: 2px solid currentColor;
   opacity: 0.5;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 .dot.done { background: currentColor; opacity: 1; }
-.dot.current { opacity: 1; box-shadow: 0 0 0 3px rgba(255,255,255,0.35); }
+/* Scale rather than a white ring — the ring vanished on the yellow prep screen. */
+.dot.current { opacity: 1; transform: scale(1.45); }
 
 .controls { margin-top: auto; display: flex; gap: 12px; }
 .controls button {
@@ -208,5 +223,5 @@ body.phase-done  .controls .primary span { color: var(--done); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body, .start { transition: none; }
+  body, .start, .dot { transition: none; }
 }

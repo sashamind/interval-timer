@@ -1,5 +1,5 @@
 // Bump on every asset change — this is what triggers reinstall and drops the old cache.
-const CACHE = 'interval-timer-v3';
+const CACHE = 'interval-timer-v4';
 const ASSETS = [
   './',
   './index.html',

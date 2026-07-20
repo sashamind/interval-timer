@@ -9,6 +9,8 @@
     prep:   { min: 0,  max: 30  }
   };
 
+  const clamp = (k, v) => Math.min(bounds[k].max, Math.max(bounds[k].min, Math.round(v)));
+
   const fmtField = (k, v) => k === 'rounds' ? String(v) : v + ' с';
   const els = {
     work: document.getElementById('v-work'),
@@ -17,6 +19,22 @@
     prep: document.getElementById('v-prep'),
   };
   const summaryEl = document.getElementById('summary');
+  const presetBtns = Array.from(document.querySelectorAll('.presets button'));
+
+  // ---- Persistence ----
+  const STORE = 'interval-timer-cfg';
+  function loadCfg() {
+    let saved;
+    try { saved = JSON.parse(localStorage.getItem(STORE)); } catch (e) { return; }
+    if (!saved || typeof saved !== 'object') return;
+    for (const k in cfg) {
+      if (typeof saved[k] === 'number' && isFinite(saved[k])) cfg[k] = clamp(k, saved[k]);
+    }
+  }
+  function saveCfg() {
+    // Private mode and blocked storage both throw; losing the setting is fine.
+    try { localStorage.setItem(STORE, JSON.stringify(cfg)); } catch (e) {}
+  }
 
   function mmss(s) {
     const m = Math.floor(s / 60), sec = s % 60;
@@ -25,31 +43,44 @@
   function totalSeconds() {
     return cfg.prep + cfg.rounds * cfg.work + Math.max(0, cfg.rounds - 1) * cfg.rest;
   }
+  function syncPresets() {
+    presetBtns.forEach(btn => {
+      const [w, r, n, p] = btn.dataset.p.split(',').map(Number);
+      const on = cfg.work === w && cfg.rest === r && cfg.rounds === n && cfg.prep === p;
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-pressed', on);
+    });
+  }
+
   function renderSetup() {
     for (const k in els) els[k].textContent = fmtField(k, cfg[k]);
     summaryEl.innerHTML =
       'Общая длительность <b>' + mmss(totalSeconds()) + '</b>. ' +
       cfg.rounds + ' × (' + cfg.work + ' с работа + ' + cfg.rest + ' с отдых).';
+    syncPresets();
   }
 
   document.querySelectorAll('.stepper button').forEach(btn => {
     btn.addEventListener('click', () => {
       const k = btn.dataset.key, act = btn.dataset.act;
       const d = (act === 'inc' ? 1 : -1) * steps[k];
-      cfg[k] = Math.min(bounds[k].max, Math.max(bounds[k].min, cfg[k] + d));
+      cfg[k] = clamp(k, cfg[k] + d);
       renderSetup();
+      saveCfg();
     });
   });
 
   // ---- Presets ----
-  document.querySelectorAll('.presets button').forEach(btn => {
+  presetBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const [w, r, n, p] = btn.dataset.p.split(',').map(Number);
       cfg.work = w; cfg.rest = r; cfg.rounds = n; cfg.prep = p;
       renderSetup();
+      saveCfg();
     });
   });
 
+  loadCfg();
   renderSetup();
 
   // ---- Sound (WebAudio beeps) ----
@@ -223,8 +254,8 @@
   }
 
   function togglePause() {
-    if (!running) {          // finished -> back to setup
-      body.classList.remove('running');
+    if (!running) {          // finished -> the button reads "Заново", so do that
+      startRun();            // ("Стоп" is what goes back to setup)
       return;
     }
     paused = !paused;
