@@ -1,0 +1,19 @@
+{
+  "name": "Интервальный таймер",
+  "short_name": "Таймер",
+  "description": "Интервальный таймер для тренировок со скакалкой: работа, отдых, раунды.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#e8e4db",
+  "theme_color": "#e8e4db",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

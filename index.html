@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#e8e4db">
+<meta name="description" content="Интервальный таймер для тренировок со скакалкой: работа, отдых, раунды.">
+<title>Интервальный таймер</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Таймер">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- SETUP -->
+  <main class="setup">
+    <div class="brand">Скакалка · Интервалы</div>
+    <h1>Интервальный<br>таймер</h1>
+
+    <div class="field">
+      <div class="field-label">
+        <span class="name">Работа</span>
+        <span class="hint">длительность раунда</span>
+      </div>
+      <div class="stepper">
+        <button data-act="dec" data-key="work" aria-label="Уменьшить работу">−</button>
+        <span class="val" id="v-work">30 с</span>
+        <button data-act="inc" data-key="work" aria-label="Увеличить работу">+</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">
+        <span class="name">Отдых</span>
+        <span class="hint">пауза между раундами</span>
+      </div>
+      <div class="stepper">
+        <button data-act="dec" data-key="rest" aria-label="Уменьшить отдых">−</button>
+        <span class="val" id="v-rest">30 с</span>
+        <button data-act="inc" data-key="rest" aria-label="Увеличить отдых">+</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">
+        <span class="name">Раунды</span>
+        <span class="hint">количество подходов</span>
+      </div>
+      <div class="stepper">
+        <button data-act="dec" data-key="rounds" aria-label="Меньше раундов">−</button>
+        <span class="val" id="v-rounds">10</span>
+        <button data-act="inc" data-key="rounds" aria-label="Больше раундов">+</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">
+        <span class="name">Подготовка</span>
+        <span class="hint">обратный отсчёт до старта</span>
+      </div>
+      <div class="stepper">
+        <button data-act="dec" data-key="prep" aria-label="Уменьшить подготовку">−</button>
+        <span class="val" id="v-prep">5 с</span>
+        <button data-act="inc" data-key="prep" aria-label="Увеличить подготовку">+</button>
+      </div>
+    </div>
+
+    <p class="summary" id="summary"></p>
+
+    <div class="presets" id="presets">
+      <button data-p="30,30,12,5">30/30 ×12</button>
+      <button data-p="20,10,8,10">Табата 20/10 ×8</button>
+      <button data-p="45,30,10,5">45/30 ×10</button>
+    </div>
+
+    <button class="start" id="startBtn">Начать</button>
+  </main>
+
+  <!-- RUN -->
+  <section class="run">
+    <div class="run-top">
+      <span id="roundLabel">Раунд 1 / 10</span>
+      <span id="totalLeft">Осталось 20:00</span>
+    </div>
+    <div class="phase-name" id="phaseName">Готовься</div>
+    <div class="clock" id="clock">0:05</div>
+    <div class="round-track" id="track"></div>
+    <div class="controls">
+      <button id="pauseBtn" class="primary"><span>Пауза</span></button>
+      <button id="stopBtn">Стоп</button>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
