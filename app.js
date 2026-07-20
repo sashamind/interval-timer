@@ -91,14 +91,21 @@
   const pauseBtn = document.getElementById('pauseBtn');
 
   let seq = [];
+  let starts = [];   // offset from run start, seconds, per step
+  let totalDur = 0;
   let idx = 0;
   let remain = 0;
   let totalRemain = 0;
   let running = false;
   let paused = false;
   let rafTimer = null;
-  let lastTs = 0;
+  let startAt = 0;   // epoch ms of run start; shifted forward on resume
+  let pausedAt = 0;
   let lastWholeSecond = -1;
+
+  // Time comes from the wall clock, not accumulated frame deltas: rAF is
+  // throttled in background tabs and stops entirely on a locked screen.
+  const elapsed = () => (Date.now() - startAt) / 1000;
 
   function buildSequence() {
     seq = [];
@@ -107,6 +114,9 @@
       seq.push({ type: 'work', dur: cfg.work, round: r });
       if (r < cfg.rounds && cfg.rest > 0) seq.push({ type: 'rest', dur: cfg.rest, round: r });
     }
+    starts = [];
+    totalDur = 0;
+    for (const step of seq) { starts.push(totalDur); totalDur += step.dur; }
   }
   function buildTrack() {
     trackEl.innerHTML = '';
@@ -171,13 +181,20 @@
     releaseWake();
   }
 
-  function loop(ts) {
+  function loop() {
     if (!running || paused) return;
-    if (!lastTs) lastTs = ts;
-    const dt = (ts - lastTs) / 1000;
-    lastTs = ts;
-    remain -= dt;
-    totalRemain -= dt;
+    const e = elapsed();
+
+    if (e >= totalDur) { finishAll(); return; }
+
+    // Skip straight to the step we belong in — after a long background gap
+    // that may be several steps ahead, and only its cue should sound.
+    let i = idx;
+    while (i + 1 < seq.length && e >= starts[i + 1]) i++;
+    if (i !== idx) { enterStep(i); lastWholeSecond = -1; }
+
+    remain = starts[idx] + seq[idx].dur - e;
+    totalRemain = totalDur - e;
 
     const whole = Math.ceil(remain);
     if (whole !== lastWholeSecond) {
@@ -186,15 +203,6 @@
     }
     renderClock();
 
-    if (remain <= 0) {
-      if (idx + 1 < seq.length) {
-        enterStep(idx + 1);
-        lastWholeSecond = -1;
-      } else {
-        finishAll();
-        return;
-      }
-    }
     rafTimer = requestAnimationFrame(loop);
   }
 
@@ -202,10 +210,10 @@
     ensureAudio();
     buildSequence();
     buildTrack();
-    totalRemain = totalSeconds();
+    totalRemain = totalDur;
     running = true;
     paused = false;
-    lastTs = 0;
+    startAt = Date.now();
     lastWholeSecond = -1;
     body.classList.add('running');
     pauseBtn.querySelector('span').textContent = 'Пауза';
@@ -222,9 +230,10 @@
     paused = !paused;
     pauseBtn.querySelector('span').textContent = paused ? 'Дальше' : 'Пауза';
     if (!paused) {
-      lastTs = 0;
+      startAt += Date.now() - pausedAt;   // pushing the origin forward hides the pause
       rafTimer = requestAnimationFrame(loop);
     } else {
+      pausedAt = Date.now();
       cancelAnimationFrame(rafTimer);
     }
   }
