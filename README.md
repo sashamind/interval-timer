@@ -22,7 +22,9 @@ styles.css            # стили
 app.js                # логика таймера
 manifest.webmanifest  # манифест PWA
 sw.js                 # service worker (офлайн-кэш)
-icon.svg              # иконка приложения
+icon.svg              # иконка (вектор, вкладка браузера)
+icon-maskable.svg     # исходник maskable-иконки с отступами
+icon-*.png            # иконки для установки: 180 (iOS), 192, 512, maskable 512
 ```
 
 ## Локальный запуск
