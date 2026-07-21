@@ -1,16 +1,16 @@
 // Bump on every asset change — this is what triggers reinstall and drops the old cache.
-const CACHE = 'interval-timer-v4';
+const CACHE = 'interval-timer-v5';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './app.js',
   './manifest.webmanifest',
-  './icon.svg',
+  './icon-32.png',
+  './icon-64.png',
   './icon-180.png',
   './icon-192.png',
-  './icon-512.png',
-  './icon-maskable-512.png'
+  './icon-512.png'
 ];
 
 self.addEventListener('install', (e) => {
